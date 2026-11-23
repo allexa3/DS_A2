@@ -241,6 +241,7 @@ services:
     networks:
       - monitoring_data
 
+
   # ---------------------------------------------------------------- message brokers (Assignment 2)
   # Synchronization Broker: user/device events (topic exchange "sync.events", one queue per consuming service).
   # No AMQP port is published: only containers on the sync_mq network can reach it.
@@ -252,14 +253,15 @@ services:
       RABBITMQ_DEFAULT_USER: ${SYNC_MQ_USER}
       RABBITMQ_DEFAULT_PASS: ${SYNC_MQ_PASSWORD}
     ports:
-      - "${SYNC_MQ_MANAGEMENT_PORT:-15672}:15672"     # management UI (demo / debugging)
+      - "${SYNC_MQ_MANAGEMENT_PORT:-15672}:15672"
     volumes:
       - sync-broker-data:/var/lib/rabbitmq
     healthcheck:
-      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "check_port_connectivity" ]
       interval: 10s
-      timeout: 5s
-      retries: 10
+      timeout: 15s
+      retries: 15
+      start_period: 45s
     networks:
       - sync_mq
 
@@ -273,15 +275,16 @@ services:
       RABBITMQ_DEFAULT_USER: ${DATA_MQ_USER}
       RABBITMQ_DEFAULT_PASS: ${DATA_MQ_PASSWORD}
     ports:
-      - "${DATA_MQ_PORT:-5672}:5672"                  # AMQP for the simulator
-      - "${DATA_MQ_MANAGEMENT_PORT:-15673}:15672"     # management UI (demo / debugging)
+      - "${DATA_MQ_PORT:-5672}:5672"
+      - "${DATA_MQ_MANAGEMENT_PORT:-15673}:15672"
     volumes:
       - data-broker-data:/var/lib/rabbitmq
     healthcheck:
-      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "check_port_connectivity" ]
       interval: 10s
-      timeout: 5s
-      retries: 10
+      timeout: 15s
+      retries: 15
+      start_period: 45s
     networks:
       - data_mq
 
@@ -308,17 +311,17 @@ volumes:
   data-broker-data:
 
 networks:
-  edge:            # proxy <-> services (and service <-> service)
+  edge: # proxy <-> services (and service <-> service)
     name: ems_edge
-  auth_data:       # auth-service <-> auth-db only
+  auth_data: # auth-service <-> auth-db only
     name: ems_auth_data
-  user_data:       # user-service <-> user-db only
+  user_data: # user-service <-> user-db only
     name: ems_user_data
-  device_data:     # device-service <-> device-db only
+  device_data: # device-service <-> device-db only
     name: ems_device_data
   monitoring_data: # monitoring-service <-> monitoring-db only
     name: ems_monitoring_data
-  sync_mq:         # Synchronization Broker <-> user / device / monitoring services
+  sync_mq: # Synchronization Broker <-> user / device / monitoring services
     name: ems_sync_mq
-  data_mq:         # Data Collection Broker <-> monitoring service
+  data_mq: # Data Collection Broker <-> monitoring service
     name: ems_data_mq
