@@ -22,7 +22,7 @@ import java.util.UUID;
 public class ConsumptionQueryService {
 
     private final DeviceRefRepository devices;
-    private final HourlyConsumptionRepository hourly;
+    private final HourlyConsumpti7onRepository hourly;
 
     public ConsumptionQueryService(DeviceRefRepository devices, HourlyConsumptionRepository hourly) {
         this.devices = devices;
